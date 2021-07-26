@@ -24,9 +24,9 @@ install.packages("yaml")
 
 - Clone this repo
 - You can generate a sample resume from the `.rmd` file in Rstudio by opening the file
-- clicking the `knit` option at the top of the file.
-- in the background, a pdf is generated using wkhtmltopdf in the same working directory as the rmarkdown and html files.
-- if you run into errors, check to make sure that you can generate an Rmarkdown file and run wkhtmltopdf separately.
+- clicking the `knit` option at the top of the file
+- if you uncomment the custom knit function at the top of the file, a pdf is generated in the background using wkhtmltopdf in the same working directory as the rmarkdown and html files
+- if you run into errors, check to make sure that you can generate an Rmarkdown file and run wkhtmltopdf separately
 
 ## Alternatives, inspiration, and design decisions
 
@@ -35,8 +35,8 @@ I was inspired by [pagedown](https://pagedown.rbind.io/) which provides a featur
 1. I prefer a rather bare resume, much closer to out-of-the-box Rmarkdown file
 1. Both the `chrome_print` method and the 'using the browser' to PDF functionality converted my links to raw markdown `[friendly link](https://www.url.com)`. From the pagedown documentation, this is a feature not a bug since someone printing the PDF would need the fully qualified url to find the resource. In my case, I imagined those viewing my resume would be viewing it on a computer, so I wanted the links to be clickable. In the case in which they printed the resume, the links would likely provide enough information for my readers to find the correct pages.
 
-Enter `wkhtmltopdf`! With a simple `$ wkhtmltopdf [OPTIONS] <resume_filename>.html <resume_filename>.pdf` I had a resume which used Rmarkdowns CSS, and retained clickable links.
+Enter `wkhtmltopdf`! With a simple `$ wkhtmltopdf [OPTIONS] <resume_filename>.html <resume_filename>.pdf` I had a resume which used Rmarkdown's CSS, and retained clickable links.
 
 To increase efficiency, I added a custom `knit` function to the Rmarkdown front matter YAML so that the `wkhtmltopdf` call was made when I knit the file.
 
-Code for making the resume feed from a csv and generate formatted markdown is largely based off this extremely helpful blog on [building a data-driven cv with R](https://livefreeordichotomize.com/2019/09/04/building_a_data_driven_cv_with_r/)
+Code for making the resume feed from a csv and generate formatted markdown is largely based off this extremely helpful blog on [building a data-driven cv with R](https://livefreeordichotomize.com/2019/09/04/building_a_data_driven_cv_with_r/). If you want a pure R solution to the links and avoid the dependency on wkhtmltopdf, there is a great section on context aware output.
