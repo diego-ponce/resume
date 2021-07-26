@@ -53,7 +53,7 @@ library(yaml)
 
 ```{r, dposition-data, message=FALSE}
 
-position_data <- read_csv("~/Desktop/resume/content.csv") %>% filter(include_in_resume==TRUE)
+position_data <- read_csv("content.csv") %>% filter(include_in_resume==TRUE)
 pivoted_positions <- position_data %>% 
   select(section, role_program, institution, point_of_interest, timeframe) 
 
