@@ -1,0 +1,136 @@
+---
+output:
+ html_document: default
+# uncomment below to generate a pdf
+# requires wkhtmltopdf installed
+# if this doesn't work, try replacing `system` with `system2` - did not work for me, but documentation
+# indicates it might be a more portable option
+# knit: (function(input, ...) {
+#     rmarkdown::render(input,
+#       envir = globalenv()
+#     );
+#     system(
+#       paste0("wkhtmltopdf --margin-top 40 --page-size Letter ", xfun::sans_ext(input),".html ", xfun::sans_ext(input),".pdf")
+#       )
+#   })
+---
+
+
+```{css echo=FALSE}
+
+/* Define a margin before h2 element */
+h4  {
+  margin-top: 2em;
+}
+
+#r-markdown  {
+  margin-top: 6em;
+}
+
+#r-markdown p:first-of-type {
+  margin-bottom: 3em;
+}
+
+body  {
+  margin-top: 10%;
+  margin-left: 10%;
+  margin-right: 10%;
+  # font-family: Helvetica Neue
+}
+``` 
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  results='asis', 
+  echo = FALSE
+)
+library(magrittr)
+library(dplyr)
+library(glue)
+library(readr)
+library(purrr)
+library(yaml)
+```
+
+```{r, dposition-data, message=FALSE}
+
+position_data <- read_csv("~/Desktop/resume/content.csv") %>% filter(include_in_resume==TRUE)
+pivoted_positions <- position_data %>% 
+  select(section, role_program, institution, point_of_interest, timeframe) 
+
+positions_w_timeline <- pivoted_positions %>% 
+  group_by(section, role_program, institution, timeframe) %>% 
+  # Wrap all descriptions into a list column
+  mutate(descriptions = list(point_of_interest), desc_num = 1:n() ) %>% 
+  ungroup() %>% 
+  select(-point_of_interest) %>% 
+  filter(desc_num == 1)
+
+positions_collapsed_bullets <- positions_w_timeline %>% 
+  mutate(
+    description_bullets = ifelse(section != "INTERESTS", 
+       map_chr(
+        descriptions, 
+        ~paste('-', ., collapse = '\n')),
+       map_chr(
+        descriptions, 
+        ~paste( ., collapse = ', '))
+    ))
+
+
+positions_no_na <- positions_collapsed_bullets %>% 
+  mutate_all(~ifelse(is.na(.), 'N/A', .))
+
+```
+```{r contact}
+contact <- yaml.load_file('contact.yaml')
+
+```
+
+# `r contact$name`
+
+`r glue("[{contact$email}](mail_to:{contact$email})")` |  `r glue("[{contact$linkedin}](https://www.{contact$linkedin})")` | `r glue("[{contact$github}](https://www.{contact$github})")` | `r contact$phone`
+
+#### SUMMARY OF QUALIFICATIONS
+
+```{r results = "asis"}
+positions_no_na %>% 
+  filter(section=="SUMMARY OF QUALIFICATIONS") %>% 
+  glue_data(
+    "{description_bullets}",
+    "\n\n\n"
+  )
+```
+
+
+#### RELEVANT WORK EXPERIENCE
+
+```{r}
+
+positions_no_na %>% 
+  filter(section=="RELEVANT WORK EXPERIENCE") %>% 
+  glue_data(
+    "**{role_program}, {institution}**",
+    "\n\n",
+    "*{timeframe}*", 
+    "\n\n",
+    "{description_bullets}",
+    "\n\n\n"
+  )
+```
+
+
+#### EDUCATION + INTERESTS
+
+```{r}
+positions_no_na %>% 
+  filter(section=="EDUCATION") %>% 
+  glue_data(
+    "**{role_program}, {institution}**",
+    "\n\n\n"
+  )
+
+positions_no_na %>% 
+    filter(section=="INTERESTS") %>% 
+    glue_data("*{description_bullets}*")
+```
+
